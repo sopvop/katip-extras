@@ -6,7 +6,7 @@ module Katip.Extra
   , module Katip.Monadic
   , grabKatipEnv
   , runKatipEnv
-  , withHandleScribe
+  , withFileScribe
   , itemFormatterBuilder
   , jsonBuilder
   ) where
@@ -48,14 +48,14 @@ runKatipEnv st act =
 type ItemBuilder a =
   LogItem a => Item a -> Verbosity -> B.Builder
 
-withHandleScribe
+withFileScribe
   :: (forall a . ItemBuilder a)
   -> PermitFunc
   -> Verbosity
   -> FilePath
   -> (Scribe -> IO () -> IO b)
   -> IO b
-withHandleScribe formatter permitF verb fname f = do
+withFileScribe formatter permitF verb fname f = do
   mh <- openBinaryFile fname AppendMode >>= newMVar
   flip finally (withMVar mh hClose) $ do
     withMVar mh $ \h ->
