@@ -14,7 +14,7 @@ build-type:          Simple
 extra-source-files:  CHANGELOG.md
 
 library
-  exposed-modules: Katip.Monadic.Extra
+  exposed-modules: Katip.Extra
   -- other-modules:
   -- other-extensions:
   build-depends: aeson          ^>= 1.4.4.0

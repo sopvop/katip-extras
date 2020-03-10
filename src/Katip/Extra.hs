@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes        #-}
 {-# LANGUAGE RecordWildCards   #-}
-module Katip.Monadic.Extra
+module Katip.Extra
   ( module Katip
   , module Katip.Monadic
   , grabKatipEnv
