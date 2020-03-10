@@ -7,6 +7,7 @@ module Katip.Extra
   , grabKatipEnv
   , runKatipEnv
   , withFileScribe
+  , mkHandleScribeWithBuilder
   , itemFormatterBuilder
   , jsonBuilder
   ) where
@@ -60,7 +61,7 @@ withFileScribe formatter permitF verb fname f = do
   flip finally (withMVar mh hClose) $ do
     withMVar mh $ \h ->
       hSetBuffering h LineBuffering
-    scribe <- mkHandleScribeWithBuilder formatter permitF verb mh
+    scribe <- mkScribe mh
     f scribe (mkRotater mh)
   where
     mkRotater mv = modifyMVar_ mv $ \oh ->
@@ -71,17 +72,22 @@ withFileScribe formatter permitF verb fname f = do
     onErr e = hPutStrLn stderr $
       "Error opening log file " <> fname <> ": " <> show e
       <> "\nWill continue logging to stderr"
+    mkScribe mh =
+      pure $ Scribe logger (withMVar mh hFlush) permitF
+      where
+        logger item = withMVar mh $ \h ->
+          B.hPutBuilder h (formatter item verb <> B.word8 10)
 
 mkHandleScribeWithBuilder
   :: (forall a . ItemBuilder a)
   -> PermitFunc
   -> Verbosity
-  -> MVar Handle
+  -> Handle
   -> IO Scribe
-mkHandleScribeWithBuilder builder permitF verb mh =
-  pure $ Scribe logger (withMVar mh hFlush) permitF
+mkHandleScribeWithBuilder builder permitF verb h =
+  pure $ Scribe logger (hFlush h) permitF
   where
-    logger item = withMVar mh $ \h ->
+    logger item =
       B.hPutBuilder h (builder item verb <> B.word8 10)
 
 itemFormatterBuilder
